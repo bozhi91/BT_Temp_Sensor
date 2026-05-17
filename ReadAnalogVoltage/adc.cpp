@@ -1,6 +1,6 @@
 
 #include <Arduino.h>
-#include "tempSensor.h"
+#include "adc.h"
 #include "DHT11.h"
 #include "display.h"
 
@@ -12,7 +12,7 @@ void displayTemp(void){
   char data[20] = {0};
 
   sprintf(data, "NTC:%.1fC", temp);
-  display_printAt(data, 0, 20);
+  display_printRow(data, 3);
 
   int temperature = 0;
   int humidity    = 0;
@@ -22,7 +22,7 @@ void displayTemp(void){
   
   if(result == 0){
     sprintf(data, "T%d.%dC|H%d", temperature/10, temperature%10, humidity);
-    display_print(data);
+    display_printRow(data, 2);
 
     Serial.printf("Temp DHT11: %d.%dºC | Humid: %d %% \n", temperature/10, temperature%10, humidity);
   } 
@@ -72,18 +72,65 @@ float buffer[N];
 int idx = 0;
 float movingAverage(float newVal) {
     
-    buffer[idx] = newVal;
-    idx = (idx + 1) % N;
+  buffer[idx] = newVal;
+  idx = (idx + 1) % N;
 
-    float sum = 0;
-    for (int i = 0; i < N; i++) sum += buffer[i];
-    return sum / N;
+  float sum = 0;
+  for (int i = 0; i < N; i++) sum += buffer[i];
+  return sum / N;
 }
 
-float alpha = 0.1; // menor = más estable
+float alpha    = 0.1; // menor = más estable
 float filtered = 0;
 float ema(float newVal) {
     filtered = alpha * newVal + (1 - alpha) * filtered;
     return filtered;
 }
 //////////////////////////////////////// FILTERS ////////////////////////////////////////
+
+void displayVoltage(void){
+
+  int bat_level = battLevel(readVoltage());
+  int voltage   = readVoltage();
+  upd_statusBar(bat_level, voltage);
+}
+
+int readVoltage(void){
+  int vcc = analogReadMilliVolts(VCC_PIN);
+  return vcc*2;
+}
+
+/**
+  Verify the current battery voltage before startup.
+  If the battery level reaches the MIN_VOLTAGE which is usually 3000-3200mV the program won't bootup.
+  In that case, the program will run an endless loop by blinking a LED that will indicate a system malfunction,
+  which in that case is an insuficiend power supply levels.
+
+  If the battery drops below 3000mV, this could damage it. So try not to fully discharge it.
+*/
+void voltageCheck(void){
+
+  if(readVoltage() <= MIN_VOLTAGE){
+
+    pinMode(LED_BUILTIN, OUTPUT);
+  
+    while(1){
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(500);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(500);
+    }
+  }
+}
+
+int battLevel(int v) {
+
+  int v_min = 3000;
+  int v_max = 4200;
+
+  if (v >= v_max) return 100;
+  if (v <= v_min) return 0;
+
+  return (v - v_min) * 100 / (v_max - v_min);
+}
+

@@ -6,8 +6,9 @@
   #define VCC_PIN  A1
   #define DHT_11   A2
 
-  #define VCC      3.3    //Reference voltage
-  #define ADC_MAX  4095.0 //Max ADC value(12 bits)
+  #define VCC         3.3    //Reference voltage
+  #define ADC_MAX     4095.0 //Max ADC value(12 bits)
+  #define MIN_VOLTAGE 3200   //Minimal Battery voltage 
 
   // --- NTC PARAMS ---
   #define R0 10800.0    
@@ -23,5 +24,10 @@
 
   void displayTemp(void);
   float getTemperatureC(void);
+  
+  int readVoltage(void);
+  void displayVoltage(void);
+  int battLevel(int v);
+  void voltageCheck(void);
 
 #endif

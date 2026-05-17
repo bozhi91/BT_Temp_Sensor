@@ -15,5 +15,8 @@
 	void display_print(const char* str);
 	void display_printAt(const char* str, int x, int y);
 	void initOLED(void);
-
+	void display_fontSize(int size);
+	void upd_statusBar(int batt, int voltage);
+	void display_printRow(const char* str, int row);
+	
 #endif /* INC_PERIPHERALS_DISPLAY_H_ */
