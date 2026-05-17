@@ -50,21 +50,6 @@ void initOLED(void){
 	display.drawFastHLine(0, 9, DISPLAY_WIDTH, 1);
 	display.display();
 	upd_statusBar(0,0);
-
-	//Draw the rest of rows
-	/*display.setCursor(0, getRow(2));
-	display.print("Hello");
-	display.display();
-	delay(1000);
-
-	clr_row(2);
-	display.setCursor(0, getRow(2));
-	display.print("World");
-	display.display();
-	delay(1000);*/
-
-	//display.clearDisplay();
-	//i2cscan();
 }
 
 void upd_statusBar(int batt, int voltage) {
@@ -100,17 +85,6 @@ static unsigned char getRow(char row){
 
 void display_fontSize(int size){
 	display.setTextSize(size);
-}
-
-void display_print(const char* str){
-
-	//Set the cursor at the last known position
-	/*display.setCursor(0, row_coords[current_row]);
-	display.fillRect(0,  row_coords[current_row], DISPLAY_WIDTH, font_height, SSD1306_BLACK);
-
-	display.setCursor(0, 10);
-	display.print(str);
-	display.display();*/
 }
 
 void display_printRow(const char* str, int row){
