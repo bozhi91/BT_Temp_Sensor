@@ -21,7 +21,7 @@ void displayTemp(void){
   int result = dht.readTemperatureHumidity(temperature, humidity);
   
   if(result == 0){
-    sprintf(data, "T%d.%dC|H%d", temperature/10, temperature%10, humidity);
+    sprintf(data, "T%d.%dC|H%d%%", temperature/10, temperature%10, humidity);
     display_printRow(data, 2);
 
     Serial.printf("Temp DHT11: %d.%dºC | Humid: %d %% \n", temperature/10, temperature%10, humidity);
@@ -92,7 +92,7 @@ void displayVoltage(void){
 
   int bat_level = battLevel(readVoltage());
   int voltage   = readVoltage();
-  upd_statusBar(bat_level, voltage);
+  upd_statusBar();
 }
 
 int readVoltage(void){
