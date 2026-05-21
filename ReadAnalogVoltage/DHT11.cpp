@@ -90,21 +90,18 @@ int DHT11::readRawData(byte data[5])
  *
  * @return: A byte of data read from the sensor.
  */
-byte DHT11::readByte()
-{
+byte DHT11::readByte(){
+  
   byte value = 0;
 
-  for (int i = 0; i < 8; i++)
-  {
-    while (digitalRead(_pin) == LOW)
-      ;
+  for (int i = 0; i < 8; i++){
+    while (digitalRead(_pin) == LOW);
     delayMicroseconds(30);
     if (digitalRead(_pin) == HIGH)
     {
       value |= (1 << (7 - i));
     }
-    while (digitalRead(_pin) == HIGH)
-      ;
+    while (digitalRead(_pin) == HIGH);
   }
   return value;
 }
@@ -114,8 +111,8 @@ byte DHT11::readByte()
  * This involves setting the data pin low for a specific duration, then high,
  * and finally setting it to input mode to read the data.
  */
-void DHT11::startSignal()
-{
+void DHT11::startSignal(){
+
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, LOW);
   delay(18);
@@ -132,12 +129,12 @@ void DHT11::startSignal()
  * @return: Temperature value in Celsius. Returns DHT11::ERROR_TIMEOUT if reading times out,
  *          or DHT11::ERROR_CHECKSUM if checksum validation fails.
  */
-int DHT11::readTemperature()
-{
+int DHT11::readTemperature(){
+
   byte data[5];
   int error = readRawData(data);
-  if (error != 0)
-  {
+  
+  if (error != 0){
     return error;
   }
   return data[2];

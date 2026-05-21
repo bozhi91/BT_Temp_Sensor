@@ -12,7 +12,7 @@
 #include <Wire.h>
 #include <Arduino.h>
 
-static char line_space   = 4;
+static char line_space   = 7;
 static char font_height  = 9;
 static char current_row  = 0;
 static char status_bar_height = 10;
@@ -22,6 +22,7 @@ static void displaySplash(void);
 static void i2cscan(void);
 static unsigned char getRow(char row);
 static void clr_row(char row);
+static void welcomeScreen(void);
 
 //Init the display SSD1306
 Adafruit_SSD1306 display(DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, -1);
@@ -45,16 +46,27 @@ void initOLED(void){
 	display.ssd1306_command(0); // 0-255
 
 	//Display loading message
-	display.setCursor(0, font_height); //row 1
-	display.print("Starting...");
-	display.display();
-	delay(1000);
+	welcomeScreen();
 
 	//Display the status bar
 	display.clearDisplay();
 	display.drawFastHLine(0, status_bar_height, DISPLAY_WIDTH, 1);
 	display.display();
 	upd_statusBar();
+}
+
+static void welcomeScreen(void){
+
+	//display.setCursor(0, font_height); //row 1
+	display.setCursor(22, 10);
+	display.printf("WELCOME!");
+	display.drawLine(10, 18, 120, 18, 1);
+
+	display.setCursor(0, 40);
+	display.printf("(c)Bozhitek");
+
+	display.display();
+	delay(3000);
 }
 
 /**
@@ -64,6 +76,7 @@ void upd_statusBar(void) {
 	
 	int bat_level = battLevel(readVoltage());
   int voltage   = readVoltage();
+	static int show_battery = 0;
 
 	display.setFont();
 	display.setCursor(0, 0);
@@ -73,20 +86,35 @@ void upd_statusBar(void) {
 		display.drawFastHLine(0, i, DISPLAY_WIDTH, 0);
 	}
 
-	//Update status bar values
-	drawBMP(5, 0, 14, 8, battery_bmp, 1, 0);
-	display.setCursor(22, 0);
+	//Display version
+	display.setCursor(90, 0);
+	display.printf(FIRM_VER);
+
+	/********  DISPLAY BATTERY STATUS  ********/
+	//Battery not detected.
+	if(bat_level == 0){
+		show_battery = !show_battery;
+		if(show_battery){
+			drawBMP(5, 0, 14, 9, battery_low, 1, 0);
+		}
+	}
+	else{	//Update status bar values
+		drawBMP(5, 0, 14, 8, battery_bmp, 1, 0);
+	}
+
+	display.setCursor(22, 0);	
 	display.printf("%d%%| ", bat_level);
 
-	//Display the Bluetooth icon. 
+	/********  DISPLAY BLUETOOTH STATUS ********/
 	//Display a normal icon if connected. Display a crossed out icon otherwise.
-
 	drawBMP(50, 0, 9, 9, bt_bmp, 1, 0);
 
+	//Bluetooth not connected
 	if(getBtStatus()==0){
 		display.drawLine(51, 9, 61, 0, 1);
 	}
 	
+	//Update display
 	display.display();
 
 	//Set back the previous font
@@ -100,7 +128,6 @@ void upd_statusBar(void) {
 static void clr_row(char row){
 
 	char pos = getRow(row-1)+line_space-1;
-	
 	for(int i=pos; i<(pos+font_height+line_space); i++){
 		display.drawFastHLine(0, i, DISPLAY_WIDTH, 0);
 	}

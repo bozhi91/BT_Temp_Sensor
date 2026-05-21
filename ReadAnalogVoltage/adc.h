@@ -14,7 +14,7 @@
   #define R0 10800.0    
   #define T0 298.15    
   #define BETA 3950.0
-  #define N 20
+  #define N 30
   #define R_FIXED  1000000.0  //1Mohm resistor for the NTC voltage divider
 
   //ADC filters
@@ -28,6 +28,10 @@
   int readVoltage(void);
   void displayVoltage(void);
   int battLevel(int v);
-  void voltageCheck(void);
+  int voltageCheck(void);
+
+  float getNTCVal(void);
+  float getTemp(void);
+  int getHumid(void);
 
 #endif

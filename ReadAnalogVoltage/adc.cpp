@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 
 #include <Arduino.h>
 #include "adc.h"
@@ -6,25 +7,41 @@
 
 DHT11 dht(DHT_11);
 
+  static float temperature = 0;
+  static int humidity      = 0;
+  static float NTC         = 0;
+
+float getNTCVal(void){
+  return NTC;
+}
+
+float getTemp(void){
+  return temperature;
+}
+
+int getHumid(void){
+  return humidity;
+}
+
 void displayTemp(void){
 
-  float temp = getTemperatureC();
+  //Read data from the NTC
+  float NTC = getTemperatureC();
   char data[20] = {0};
+  int temp;
 
-  sprintf(data, "NTC:%.1fC", temp);
+  sprintf(data, "NTC:%.1fC", NTC);
   display_printRow(data, 3);
 
-  int temperature = 0;
-  int humidity    = 0;
-
   // Attempt to read the temperature and humidity values from the DHT11 sensor.
-  int result = dht.readTemperatureHumidity(temperature, humidity);
+  int result = dht.readTemperatureHumidity(temp, humidity);
   
   if(result == 0){
-    sprintf(data, "T%d.%dC|H%d%%", temperature/10, temperature%10, humidity);
-    display_printRow(data, 2);
+    temperature = temp/10.0;
 
-    Serial.printf("Temp DHT11: %d.%dºC | Humid: %d %% \n", temperature/10, temperature%10, humidity);
+    sprintf(data, "T%.1fC|H%d%%", temperature, humidity);
+    display_printRow(data, 2);
+    Serial.printf("Temp DHT11: %.1fºC | Humid: %d %% \n", temperature, humidity);
   } 
   else{
    // Serial.printf("DHT11 read error: %d \n", result);
@@ -88,16 +105,9 @@ float ema(float newVal) {
 }
 //////////////////////////////////////// FILTERS ////////////////////////////////////////
 
-void displayVoltage(void){
-
-  int bat_level = battLevel(readVoltage());
-  int voltage   = readVoltage();
-  upd_statusBar();
-}
-
+//Read battery voltage in mV
 int readVoltage(void){
-  int vcc = analogReadMilliVolts(VCC_PIN);
-  return vcc*2;
+  return  analogReadMilliVolts(VCC_PIN)*2;
 }
 
 /**
@@ -108,10 +118,18 @@ int readVoltage(void){
 
   If the battery drops below 3000mV, this could damage it. So try not to fully discharge it.
 */
-void voltageCheck(void){
+int voltageCheck(void){
 
-  if(readVoltage() <= MIN_VOLTAGE){
+  int result = 0;
 
+  if (Serial) {
+    Serial.print("USB CONNECTED ");
+    result = 1;
+  }
+  else if(readVoltage() <= MIN_VOLTAGE){ //USB not connected and battery power is too low.
+    result = 2;
+
+    Serial.print(" BATTERY DEAD!!");
     pinMode(LED_BUILTIN, OUTPUT);
   
     while(1){
@@ -121,6 +139,8 @@ void voltageCheck(void){
       delay(500);
     }
   }
+
+  return result;
 }
 
 int battLevel(int v) {

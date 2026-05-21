@@ -3,5 +3,6 @@
 
     int bt_init(void);
     int getBtStatus(void);
-
+    void btDriver(void);
+    
 #endif
